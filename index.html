@@ -77,5 +77,65 @@ footer{margin:0 -20px;padding:25px 18px 30px;text-align:center;background:#03081
 const TELEGRAM_LINK = "https://t.me/+LCPnPRu_te41N2M1";
 document.querySelectorAll('.join-link').forEach(link=>{link.href=TELEGRAM_LINK;});
 document.getElementById('year').textContent=new Date().getFullYear();
-</script><script src="https://multiplyadstracking.vercel.app/telegram-meta-tracking.js" data-client="rajkumar02" data-api="https://multiplyadstracking.vercel.app" defer></script>
+</script><script>
+/* Instant Telegram handoff: prepare a unique invite in the background; never block the user's tap. */
+(() => {
+  const API = "https://multiplyadstracking.vercel.app";
+  const CLIENT = "rajkumar02";
+  const buttons = [...document.querySelectorAll(".join-link")];
+  const fallback = "https://t.me/+LCPnPRu_te41N2M1";
+  buttons.forEach((button) => { button.href = fallback; });
+
+  const readCookie = (name) => {
+    const item = document.cookie.split("; ").find((part) => part.startsWith(name + "="));
+    return item ? decodeURIComponent(item.slice(name.length + 1)) : null;
+  };
+
+  // The click is never prevented: the browser immediately opens the latest href.
+  buttons.forEach((button) => button.addEventListener("click", () => {
+    if (window.fbq) window.fbq("trackCustom", "JoinClick");
+  }, { passive: true }));
+
+  (async () => {
+    try {
+      const cfgResponse = await fetch(`${API}/api/config?client_slug=${encodeURIComponent(CLIENT)}`);
+      if (!cfgResponse.ok) throw new Error("Tracking config unavailable");
+      const cfg = await cfgResponse.json();
+      const stableLink = cfg.telegram_join_url || fallback;
+      buttons.forEach((button) => { if (button.href === fallback) button.href = stableLink; });
+
+      if (cfg.pixel_id && !window.fbq) {
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+        window.fbq("init", cfg.pixel_id);
+      }
+      if (cfg.pixel_id && window.fbq && !window.__multiplyPageViewSent) {
+        window.__multiplyPageViewSent = true;
+        window.fbq("track", "PageView");
+      }
+
+      const params = new URLSearchParams(location.search);
+      const fbclid = params.get("fbclid");
+      const fbc = readCookie("_fbc") || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null);
+      const fbp = readCookie("_fbp");
+      const inviteResponse = await fetch(`${API}/api/create-invite`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          client_slug: CLIENT,
+          landing_url: location.href,
+          referrer: document.referrer || null,
+          fbclid, fbc, fbp
+        })
+      });
+      const inviteData = await inviteResponse.json().catch(() => ({}));
+      if (inviteResponse.ok && inviteData.invite_url) {
+        buttons.forEach((button) => { button.href = inviteData.invite_url; });
+      }
+    } catch (error) {
+      // Keep the direct Telegram link active; do not delay or block joining.
+      console.warn("Background Telegram attribution setup unavailable; using direct channel link.", error);
+    }
+  })();
+})();
+</script>
 </body></html>
