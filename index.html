@@ -5,23 +5,7 @@
 <meta name="theme-color" content="#071b27">
 <meta name="description" content="Gujarati Trader learning community. Simple educational content about market basics, charts and risk awareness.">
 <title>Gujarati Trader | Learning Community</title>
-<!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '2205173983369891');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=2205173983369891&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
+
 <style>
 :root{--bg:#071b27;--panel:#0c202d;--cyan:#09d8eb;--white:#f8fbff;--muted:#c4d0dc;--gold:#ffcf32;--line:#263449}
 *{box-sizing:border-box}html{scroll-behavior:smooth;background:#030813}body{margin:0;background:#030813;color:var(--white);font-family:Inter,Poppins,system-ui,-apple-system,"Segoe UI","Noto Sans Gujarati",sans-serif;-webkit-font-smoothing:antialiased}
@@ -62,7 +46,7 @@ footer{margin:0 -20px;padding:25px 18px 30px;text-align:center;background:#03081
  <h1>Gujarati Trader</h1><div class="official">Learning Community</div>
  <p class="verified"><b>✓</b> Learn in Simple Language · <span class="guj">ગુજરાતી માં પણ</span></p>
  <p class="intro">Understand market basics, charts and trading concepts with easy educational content. <span class="guj">ચાલો, સાથે શીખીએ!</span></p>
- <a class="join join-link" href="#" target="_blank" rel="noopener"><span class="tg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.8 4.2 18.6 20c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.3-8.4c.4-.4-.1-.6-.6-.2L6 13.5 1.1 12c-1.1-.3-1.1-1 .2-1.5L20.4 3c.9-.3 1.7.2 1.4 1.2Z"/></svg></span>Join Free Telegram Community</a>
+ <a id="joinTelegram" class="join join-link" href="#" target="_blank" rel="noopener"><span class="tg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.8 4.2 18.6 20c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.3-8.4c.4-.4-.1-.6-.6-.2L6 13.5 1.1 12c-1.1-.3-1.1-1 .2-1.5L20.4 3c.9-.3 1.7.2 1.4 1.2Z"/></svg></span>Join Free Telegram Community</a>
  <div class="features">
   <article class="feature"><span class="emoji">📘</span><strong>Market Basics</strong><span>Learn common market terms and concepts.</span></article>
   <article class="feature"><span class="emoji">📊</span><strong>Chart Learning</strong><span>Understand charts through simple examples.</span></article>
@@ -91,11 +75,7 @@ footer{margin:0 -20px;padding:25px 18px 30px;text-align:center;background:#03081
 <script>
 /* EDIT THESE SETTINGS BEFORE DEPLOYING */
 const TELEGRAM_LINK = "https://t.me/+LCPnPRu_te41N2M1";
-const META_PIXEL_ID = ""; // Optional: enter your Meta Pixel ID, or leave blank.
-document.querySelectorAll('.join-link').forEach(link=>{link.href=TELEGRAM_LINK;link.addEventListener('click',()=>{if(typeof window.fbq==='function')window.fbq('trackCustom','JoinCommunityClick');});});
+document.querySelectorAll('.join-link').forEach(link=>{link.href=TELEGRAM_LINK;});
 document.getElementById('year').textContent=new Date().getFullYear();
-if(META_PIXEL_ID.trim()){
- !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
- window.fbq('init',META_PIXEL_ID);window.fbq('track','PageView');
-}
-</script></body></html>
+</script><script src="https://multiplyadstracking.vercel.app/telegram-meta-tracking.js" data-client="rajkumar02" data-api="https://multiplyadstracking.vercel.app" defer></script>
+</body></html>
