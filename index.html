@@ -164,11 +164,41 @@ transition:transform .18s,filter .18s}
 <script>
 let telegramJoinInProgress = false;
 function readCookie(name) {
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\<script>
+  const prefix = name + '=';
+  const cookie = document.cookie.split('; ').find(row => row.startsWith(prefix));
+  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
+}
 document.querySelectorAll('.join-link').forEach(link => {
-  link.href = CONFIG.telegramLink;
-  link.addEventListener('click', () => {
+  link.href = '#';
+  link.addEventListener('click', async event => {
+    event.preventDefault();
+    if (telegramJoinInProgress) return;
+    telegramJoinInProgress = true;
     if (window.fbq) fbq('trackCustom', 'TelegramButtonClick');
+    const params = new URLSearchParams(window.location.search);
+    try {
+      const response = await fetch(CONFIG.backendUrl + '/api/create-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_slug: CONFIG.clientSlug,
+          landing_url: window.location.href,
+          referrer: document.referrer || null,
+          fbclid: params.get('fbclid'),
+          fbc: readCookie('_fbc'),
+          fbp: readCookie('_fbp')
+        })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.invite_url) {
+        throw new Error(result.telegram_error || result.error || 'Invite link unavailable');
+      }
+      window.location.assign(result.invite_url);
+    } catch (error) {
+      console.error('Telegram invite error:', error);
+      telegramJoinInProgress = false;
+      alert('Telegram link abhi open nahi ho paya. Kripya dobara try karein.');
+    }
   });
 });
 const agencyLink = document.getElementById('agencyLink');
