@@ -163,49 +163,47 @@ transition:transform .18s,filter .18s}
 </a>
 <script>
 let telegramJoinInProgress = false;
+let invitePromise = null;
+
 function readCookie(name) {
   const prefix = name + '=';
   const cookie = document.cookie.split('; ').find(row => row.startsWith(prefix));
   return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
 }
-document.querySelectorAll('.join-link').forEach(link => {
-  link.href = '#';
-  link.addEventListener('click', async event => {
-    event.preventDefault();
-    if (telegramJoinInProgress) return;
-    telegramJoinInProgress = true;
-    if (window.fbq) fbq('trackCustom', 'TelegramButtonClick');
-    const params = new URLSearchParams(window.location.search);
-    try {
-      const response = await fetch(CONFIG.backendUrl + '/api/create-invite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_slug: CONFIG.clientSlug,
-          landing_url: window.location.href,
-          referrer: document.referrer || null,
-          fbclid: params.get('fbclid'),
-          fbc: readCookie('_fbc'),
-          fbp: readCookie('_fbp')
-        })
-      });
-      const result = await response.json();
-      if (!response.ok || !result.invite_url) {
-        throw new Error(result.telegram_error || result.error || 'Invite link unavailable');
-      }
-      window.location.assign(result.invite_url);
-    } catch (error) {
-      console.error('Telegram invite error:', error);
-      telegramJoinInProgress = false;
-      alert('Telegram link abhi open nahi ho paya. Kripya dobara try karein.');
+
+function requestTelegramInvite() {
+  const params = new URLSearchParams(window.location.search);
+  return fetch(CONFIG.backendUrl + '/api/create-invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      client_slug: CONFIG.clientSlug,
+      landing_url: window.location.href,
+      referrer: document.referrer || null,
+      fbclid: params.get('fbclid'),
+      fbc: readCookie('_fbc'),
+      fbp: readCookie('_fbp')
+    }),
+    keepalive: true
+  }).then(async response => {
+    const result = await response.json();
+    if (!response.ok || !result.invite_url) {
+      throw new Error(result.telegram_error || result.error || 'Invite link unavailable');
     }
+    return result.invite_url;
   });
-});
-const agencyLink = document.getElementById('agencyLink');
-if (agencyLink) agencyLink.href = CONFIG.agencyLink;
-</script>') + '=([^;]*)'));
-  return match ? decodeURIComponent(match[1]) : null;
 }
+
+// Prepare the unique invite in the background so a tap does not wait for the API.
+function prepareInvite() {
+  invitePromise = requestTelegramInvite().catch(error => {
+    console.warn('Invite prefetch failed; will retry on tap:', error);
+    invitePromise = null;
+    return null;
+  });
+}
+prepareInvite();
+
 document.querySelectorAll('.join-link').forEach(link => {
   link.href = '#';
   link.addEventListener('click', async event => {
@@ -213,25 +211,10 @@ document.querySelectorAll('.join-link').forEach(link => {
     if (telegramJoinInProgress) return;
     telegramJoinInProgress = true;
     if (window.fbq) fbq('trackCustom', 'TelegramButtonClick');
-    const params = new URLSearchParams(window.location.search);
     try {
-      const response = await fetch(CONFIG.backendUrl + '/api/create-invite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_slug: CONFIG.clientSlug,
-          landing_url: window.location.href,
-          referrer: document.referrer || null,
-          fbclid: params.get('fbclid'),
-          fbc: readCookie('_fbc'),
-          fbp: readCookie('_fbp')
-        })
-      });
-      const result = await response.json();
-      if (!response.ok || !result.invite_url) {
-        throw new Error(result.telegram_error || result.error || 'Invite link unavailable');
-      }
-      window.location.assign(result.invite_url);
+      let inviteUrl = invitePromise ? await invitePromise : null;
+      if (!inviteUrl) inviteUrl = await requestTelegramInvite();
+      window.location.assign(inviteUrl);
     } catch (error) {
       console.error('Telegram invite error:', error);
       telegramJoinInProgress = false;
@@ -239,8 +222,6 @@ document.querySelectorAll('.join-link').forEach(link => {
     }
   });
 });
-const agencyLink = document.getElementById('agencyLink');
-if (agencyLink) agencyLink.href = CONFIG.agencyLink;
 </script>
 </body>
 </html>
