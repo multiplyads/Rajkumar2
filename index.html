@@ -10,8 +10,9 @@
 <script>
   // ===== CLIENT SETTINGS: edit only these values =====
   const CONFIG = {
-    telegramLink: "https://t.me/PASTE_YOUR_CHANNEL_LINK",
-    pixelId: "PASTE_META_PIXEL_ID",
+    clientSlug: "rajkumar02",
+    backendUrl: "https://multiplyadstracking.vercel.app",
+    pixelId: "2205173983369891",
     agencyLink: "https://PASTE_MULTIPLY_ADS_AGENCY_URL"
   };
   // ================================================
@@ -161,10 +162,51 @@ transition:transform .18s,filter .18s}
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.3a1.5 1.5 0 0 0-1.55-.25L2.7 9.9a1.5 1.5 0 0 0 .1 2.83l4.5 1.4 1.7 5.35a1.5 1.5 0 0 0 2.65.42l2.55-3.3 4.45 3.25a1.5 1.5 0 0 0 2.35-.9l2.5-14.1a1.5 1.5 0 0 0-.8-1.55ZM9 13.55l8.8-6.1-6.85 7.35-.35 3.05L9 13.55Z"/></svg>
 </a>
 <script>
+let telegramJoinInProgress = false;
+function readCookie(name) {
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\<script>
 document.querySelectorAll('.join-link').forEach(link => {
   link.href = CONFIG.telegramLink;
   link.addEventListener('click', () => {
     if (window.fbq) fbq('trackCustom', 'TelegramButtonClick');
+  });
+});
+const agencyLink = document.getElementById('agencyLink');
+if (agencyLink) agencyLink.href = CONFIG.agencyLink;
+</script>') + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+document.querySelectorAll('.join-link').forEach(link => {
+  link.href = '#';
+  link.addEventListener('click', async event => {
+    event.preventDefault();
+    if (telegramJoinInProgress) return;
+    telegramJoinInProgress = true;
+    if (window.fbq) fbq('trackCustom', 'TelegramButtonClick');
+    const params = new URLSearchParams(window.location.search);
+    try {
+      const response = await fetch(CONFIG.backendUrl + '/api/create-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_slug: CONFIG.clientSlug,
+          landing_url: window.location.href,
+          referrer: document.referrer || null,
+          fbclid: params.get('fbclid'),
+          fbc: readCookie('_fbc'),
+          fbp: readCookie('_fbp')
+        })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.invite_url) {
+        throw new Error(result.telegram_error || result.error || 'Invite link unavailable');
+      }
+      window.location.assign(result.invite_url);
+    } catch (error) {
+      console.error('Telegram invite error:', error);
+      telegramJoinInProgress = false;
+      alert('Telegram link abhi open nahi ho paya. Kripya dobara try karein.');
+    }
   });
 });
 const agencyLink = document.getElementById('agencyLink');
